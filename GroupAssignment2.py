@@ -44,3 +44,4 @@ model.fit(x=[x_cat,x_num],y=quantity, batch_size=10, epochs=5)
 
 model.history.history['loss']
 
+#first attempt at RMSprop; need to think about grid and function

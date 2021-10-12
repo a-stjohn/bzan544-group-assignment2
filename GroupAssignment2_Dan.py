@@ -32,11 +32,15 @@ inputs_num = tf.keras.layers.Input(shape=(3,),name = 'in_num')
 inputs_concat = tf.keras.layers.Concatenate(
     name = 'concatenation'
 )([embedding_flat, inputs_num])
-hidden = tf.keras.layers.Dense(200,name='hidden')(inputs_concat)
+hidden = tf.keras.layers.Dense(
+    200,
+    name='hidden1',
+    activation = "tanh"
+    )(inputs_concat)
 outputs = tf.keras.layers.Dense(1, name = 'out')(hidden)
 
-model = tf.keras.Model(inputs = [inputs_cat,inputs_num], outputs = outputs)
-model.summary()
+tanh_Nadam_model = tf.keras.Model(inputs = [inputs_cat,inputs_num], outputs = outputs)
+tanh_Nadam_model.summary()
 
 # loss: 1604.5897
 initial_learning_rate = 0.1
@@ -45,22 +49,16 @@ decay_rate = 1/10
 learning_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     initial_learning_rate, decay_steps, decay_rate
 )
-model.compile(
+tanh_Nadam_model.compile(
     loss = 'mse',
-    optimizer = tf.keras.optimizers.SGD(learning_rate=learning_schedule)
+    optimizer = tf.keras.optimizers.Nadam(
+        learning_rate=0.001, beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-07, name = "Nadam")
 )
-model.fit(x=[x_cat,x_num],y=quantity, batch_size=10, epochs=10)
+tanh_Nadam_model.fit(x=[x_cat,x_num],y=quantity, batch_size=10, epochs=10)
 
-# loss: 1330.1373 IMPROVED, YAY!
-lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-    initial_learning_rate = 1e-2,
-    decay_steps = 10000,
-    decay_rate = 0.9
-)
-model.compile(
-    loss = 'mse',
-    optimizer = tf.keras.optimizers.Adagrad(learning_rate=lr_schedule, initial_accumulator_value=0.1, epsilon=1e-07)
-)
-model.fit(x=[x_cat,x_num],y=quantity, batch_size=10, epochs=10)
+tanh_Nadam_model.history.history['loss']
 
-model.history.history['loss']
+tf.keras.models.save_model(
+    tanh_Nadam_model,
+    filepath = 'C:\\Users\\danie\\Documents\\GitHub\\bzan554-group-assignment2\\models'
+)
